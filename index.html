@@ -24,7 +24,7 @@
 
         let svg = d3.select("svg");
         svg.selectAll('#stockframe')
-        .attr('height', maxMarketStockHeight)
+        .attr('height', maxMarketStockHeight);
 
         let slider = document.getElementById("myRange");
 
@@ -63,6 +63,23 @@
             .attr('fill', 'none')
             .attr('stroke', 'black');
             circlesRefStock.attr("r", d => zoomFactor*Math.sqrt(d));
+
+            for (let customer of customers) {
+                svg.append('circle')
+                .attr('class', 'buyTransition')
+                .attr('cy', 30 + maxMarketStockHeight/2)
+                .attr('cx', 55)
+                .attr('fill', 'steelblue')
+                .attr("r", zoomFactor*Math.sqrt(customer.lastBuy))
+                .transition()
+                .attr("cy", 60 + Math.floor(customer.id/10) * circleDistance)
+                .attr("cx", (customer.id%10) * circleDistance + customerOSX)
+                .duration(500)
+                .on("end",function() { // on end of transition...
+                    d3.select(this).remove();
+                });
+
+            }
         }
 
     </script>
@@ -95,6 +112,7 @@
         let customers = [];
         for (let i = 0; i < config.customers; i++) {
             customers.push({
+                id: i,
                 stock: config.defaultPrivateStock + Math.floor(Math.random() * 10),
                 stockLevel: config.defaultPrivateStock,
                 timeSinceLastConsumption: Math.floor(Math.random() * 24)
@@ -131,9 +149,12 @@
                 let amount = Math.min(buyQuantity, stock);
                 customer.stock += amount;
                 stock -= amount;
+                customer.lastBuy = amount;
                 if (amount === 0) {
                     customer.stockLevel = config.adaptedPrivateStock;
                 }
+            } else {
+                customer.lastBuy = 0;
             }
         }
 

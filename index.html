@@ -44,28 +44,30 @@
             .attr('y', 60 + maxMarketStockHeight - marketStockHeight)
 
             let numEnded = 0;
-            for (let customer of customers) {
-
-                //TODO: work with the same elements for performance
-                svg.append('circle')
-                .attr('class', 'buyTransition')
-                .attr('cy', 30 + maxMarketStockHeight/2)
-                .attr('cx', 55)
-                .attr('fill', 'steelblue')
-                .attr("r", zoomFactor*Math.sqrt(customer.lastBuy))
-                .transition()
-                .attr("cy", 60 + Math.floor(customer.id/10) * circleDistance)
-                .attr("cx", (customer.id%10) * circleDistance + customerOSX)
-                .duration(simulationInterval*.8)
-                .on("end",function() { // on end of transition...
-                    d3.select(this).remove()
-                    numEnded++;
-                    if (numEnded === customers.length) {
-                        renderCustomers(customers);
-                    }
-                })
-
-            }
+            svg.selectAll('.buyTransition')
+            .data(customers)
+            .enter()
+            .append('circle')
+            .attr('class', 'buyTransition')
+            .attr('cy', 30 + maxMarketStockHeight/2)
+            .attr('cx', 85)
+            .attr('fill', 'steelblue')
+            svg.selectAll('.buyTransition')
+            .attr('cy', 30 + maxMarketStockHeight/2)
+            .attr('cx', 55)
+            .attr("r", customer => zoomFactor*Math.sqrt(customer.lastBuy))
+            .transition()
+            .attr("cy", customer => 60 + Math.floor(customer.id/10) * circleDistance)
+            .attr("cx", customer => (customer.id%10) * circleDistance + customerOSX)
+            .duration(simulationInterval*.8)
+            .on("end",function() {
+                numEnded++;
+                if (numEnded === customers.length) {
+                    svg.selectAll('.buyTransition')
+                    .attr("r", 0)
+                    renderCustomers(customers)
+                }
+            })
         }
 
         function renderCustomers(customers) {

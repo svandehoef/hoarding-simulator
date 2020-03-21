@@ -6,13 +6,7 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
 </head>
 <body>
-    <svg width="720" height="120">
-        <circle class="stock" cx="30" cy="60" r="5.656854249492381" fill="steelblue"></circle>
-        <circle class="refstock" cx="30" cy="60" r="3" stroke="black" fill="none"></circle>
-        <circle class="stock" cx="130" cy="60" r="7.54983443527075" fill="steelblue"></circle>
-        <circle class="refstock" cx="130" cy="60" r="3" stroke="black" fill="none"></circle>
-        <circle class="stock" cx="230" cy="60" r="10.583005244258363" fill="steelblue"></circle>
-        <circle class="refstock" cx="230" cy="60" r="3" stroke="black" fill="none"></circle>
+    <svg width="900" height="900">
     </svg>
     <div>
         <label>Stock:</label>
@@ -22,6 +16,7 @@
     <script>
 
         let zoomFactor = 4;
+        let circleDistance = 60;
 
         let slider = document.getElementById("myRange");
 
@@ -33,10 +28,23 @@
         function update(stock, refStock) {
             let svg = d3.select("svg");
             let circlesStock = svg.selectAll(".stock");
-            circlesStock.data(stock);
-            circlesStock.attr("r", d => zoomFactor*Math.sqrt(d));
+            circlesStock.data(stock)
+            .enter().append("circle")
+            .attr('class', 'stock')
+            .attr("cy", (d, i) => 60 + Math.floor(i/10) * circleDistance)
+            .attr("cx", function(d, i) { return (i%10) * circleDistance + 30; });
+            circlesStock
+            .attr("r", d => zoomFactor*Math.sqrt(d))
+            .attr('fill', 'steelblue');
+
             let circlesRefStock = svg.selectAll(".refstock");
-            circlesRefStock.data(refStock);
+            circlesRefStock.data(refStock)
+            .enter().append("circle")
+            .attr('class', 'refstock')
+            .attr("cy", (d, i) => 60 + Math.floor(i/10) * circleDistance)
+            .attr("cx", function(d, i) { return (i%10) * circleDistance + 30; })
+            .attr('fill', 'none')
+            .attr('stroke', 'black');
             circlesRefStock.attr("r", d => zoomFactor*Math.sqrt(d));
         }
 

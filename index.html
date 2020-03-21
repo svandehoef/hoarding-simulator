@@ -7,8 +7,8 @@
 </head>
 <body>
     <svg width="900" height="900">
-        <rect id="stock" width="50" height="300" fill="steelblue" x="30" y="30"/>
-        <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="30" y="30"/>
+        <rect id="stock" width="50" height="300" fill="steelblue" x="60" y="60"/>
+        <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="60" y="60"/>
     </svg>
     <div>
         <label>Stock:</label>
@@ -17,54 +17,36 @@
 
     <script>
 
-        let zoomFactor = 4;
-        let maxMarketStockHeight = 300;
-        let circleDistance = 60;
-        let customerOSX = 200;
+        let zoomFactor = 4
+        let maxMarketStockHeight = 300
+        let circleDistance = 60
+        let customerOSX = 200
 
-        let svg = d3.select("svg");
+        let simulationInterval = 300
+
+        let svg = d3.select("svg")
         svg.selectAll('#stockframe')
-        .attr('height', maxMarketStockHeight);
+        .attr('height', maxMarketStockHeight)
 
-        let slider = document.getElementById("myRange");
+        let slider = document.getElementById("myRange")
 
         // Update the current slider value (each time you drag the slider handle)
         slider.oninput = function() {
-            console.log(this.value);
-        };
+            console.log(this.value)
+        }
 
-        function update(customers, marketStock, marketStockLevel) {
+        function render(customers, marketStock, marketStockLevel) {
 
-            let marketStockHeight = maxMarketStockHeight * marketStock / marketStockLevel;
+            let marketStockHeight = maxMarketStockHeight * marketStock / marketStockLevel
 
             svg.selectAll('#stock')
             .attr('height', marketStockHeight)
-            .attr('y', 30 + maxMarketStockHeight - marketStockHeight);
+            .attr('y', 60 + maxMarketStockHeight - marketStockHeight)
 
-            let stock = customers.map((c) => c.stock);
-            let refStock = customers.map((c) => c.stockLevel);
-
-            let circlesStock = svg.selectAll(".stock");
-            circlesStock.data(stock)
-            .enter().append("circle")
-            .attr('class', 'stock')
-            .attr("cy", (d, i) => 60 + Math.floor(i/10) * circleDistance)
-            .attr("cx", function(d, i) { return (i%10) * circleDistance + customerOSX; });
-            circlesStock
-            .attr("r", d => zoomFactor*Math.sqrt(d))
-            .attr('fill', 'steelblue');
-
-            let circlesRefStock = svg.selectAll(".refstock");
-            circlesRefStock.data(refStock)
-            .enter().append("circle")
-            .attr('class', 'refstock')
-            .attr("cy", (d, i) => 60 + Math.floor(i/10) * circleDistance)
-            .attr("cx", function(d, i) { return (i%10) * circleDistance + customerOSX; })
-            .attr('fill', 'none')
-            .attr('stroke', 'black');
-            circlesRefStock.attr("r", d => zoomFactor*Math.sqrt(d));
-
+            let numEnded = 0;
             for (let customer of customers) {
+
+                //TODO: work with the same elements for performance
                 svg.append('circle')
                 .attr('class', 'buyTransition')
                 .attr('cy', 30 + maxMarketStockHeight/2)
@@ -74,12 +56,44 @@
                 .transition()
                 .attr("cy", 60 + Math.floor(customer.id/10) * circleDistance)
                 .attr("cx", (customer.id%10) * circleDistance + customerOSX)
-                .duration(500)
+                .duration(simulationInterval*.8)
                 .on("end",function() { // on end of transition...
-                    d3.select(this).remove();
-                });
+                    d3.select(this).remove()
+                    numEnded++;
+                    if (numEnded === customers.length) {
+                        renderCustomers(customers);
+                    }
+                })
 
             }
+        }
+
+        function renderCustomers(customers) {
+            let stock = customers.map((c) => c.stock)
+
+            let circlesStock = svg.selectAll(".stock")
+            circlesStock.data(stock)
+            .enter().append("circle")
+            .attr('class', 'stock')
+            .attr("cy", (d, i) => 60 + Math.floor(i/10) * circleDistance)
+            .attr("cx", function(d, i) { return (i%10) * circleDistance + customerOSX })
+            circlesStock
+            .attr("r", d => zoomFactor*Math.sqrt(d))
+            .attr('fill', 'steelblue')
+
+            let circlesRefStock = svg.selectAll(".refstock")
+            circlesRefStock.data(customers)
+            .enter().append("circle")
+            .attr('class', 'refstock')
+            .attr("cy", (d, i) => 60 + Math.floor(i/10) * circleDistance)
+            .attr("cx", function(d, i) { return (i%10) * circleDistance + customerOSX })
+            .attr('fill', 'none')
+            .attr('stroke', 'black')
+            .attr('stroke-width', '1.5')
+            circlesRefStock
+            .attr("r", d => zoomFactor*Math.sqrt(d.stockLevel))
+            .attr('stroke', d => d.understocked ? 'red' : 'black')
+
         }
 
     </script>
@@ -94,103 +108,103 @@
             adaptedPrivateStock: 30,
             reserve: 8,
             stockSizeDays: 2
-        };
+        }
 
-        config.stockLevel = config.stockSizeDays * config.customers * config.deliveryInterval / config.consumptionInterval;
-        console.log(`stocklevel ${config.stockLevel}`);
+        config.stockLevel = config.stockSizeDays * config.customers * config.deliveryInterval / config.consumptionInterval
+        console.log(`stocklevel ${config.stockLevel}`)
 
 
-        let clock = 0;
+        let clock = 0
 
-        let updateOrder = [];
+        let updateOrder = []
         for (let i = 0; i < config.customers; i++) {
             updateOrder.push(i);
         }
 
-        let stock = config.stockLevel;
-        let timeSinceLastDelivery = 0;
-        let customers = [];
+        let stock = config.stockLevel
+        let timeSinceLastDelivery = 0
+        let customers = []
         for (let i = 0; i < config.customers; i++) {
             customers.push({
                 id: i,
                 stock: config.defaultPrivateStock + Math.floor(Math.random() * 10),
                 stockLevel: config.defaultPrivateStock,
-                timeSinceLastConsumption: Math.floor(Math.random() * 24)
+                timeSinceLastConsumption: Math.floor(Math.random() * 24),
+                lastBuy: 0,
+                understocked: false
             })
         }
+        renderCustomers(customers)
 
         function shuffle(array) {
-            let currentIndex = array.length, temporaryValue, randomIndex;
+            let currentIndex = array.length, temporaryValue, randomIndex
 
             // While there remain elements to shuffle...
             while (0 !== currentIndex) {
 
                 // Pick a remaining element...
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex -= 1;
+                randomIndex = Math.floor(Math.random() * currentIndex)
+                currentIndex -= 1
 
                 // And swap it with the current element.
-                temporaryValue = array[currentIndex];
-                array[currentIndex] = array[randomIndex];
-                array[randomIndex] = temporaryValue;
+                temporaryValue = array[currentIndex]
+                array[currentIndex] = array[randomIndex]
+                array[randomIndex] = temporaryValue
             }
 
-            return array;
+            return array
         }
 
         function updateCustomer(customer) {
-            customer.timeSinceLastConsumption += 1;
+            customer.timeSinceLastConsumption += 1
             if (customer.timeSinceLastConsumption >= config.consumptionInterval && customer.stock > 0) {
-                customer.stock -= 1;
-                customer.timeSinceLastConsumption = 0;
+                customer.stock -= 1
+                customer.timeSinceLastConsumption = 0
             }
             if (customer.stock < customer.stockLevel) {
-                let buyQuantity = customer.stockLevel - customer.stock + config.reserve;
-                let amount = Math.min(buyQuantity, stock);
-                customer.stock += amount;
-                stock -= amount;
-                customer.lastBuy = amount;
+                let buyQuantity = customer.stockLevel - customer.stock + config.reserve
+                let amount = Math.min(buyQuantity, stock)
+                customer.stock += amount
+                stock -= amount
+                customer.lastBuy = amount
                 if (amount === 0) {
-                    customer.stockLevel = config.adaptedPrivateStock;
+                    customer.stockLevel = config.adaptedPrivateStock
                 }
+                customer.understocked = customer.stock < customer.stockLevel
             } else {
-                customer.lastBuy = 0;
+                customer.lastBuy = 0
             }
         }
 
         function simulationStep() {
-            clock += 1;
-            timeSinceLastDelivery += 1;
+            clock += 1
+            timeSinceLastDelivery += 1
             if (timeSinceLastDelivery === 24) {
-                console.log('delivery');
-                stock = config.stockLevel;
-                timeSinceLastDelivery = 0;
+                console.log('delivery')
+                stock = config.stockLevel
+                timeSinceLastDelivery = 0
             } else {
-                shuffle(updateOrder);
+                shuffle(updateOrder)
                 for (let i of updateOrder) {
-                    updateCustomer(customers[i]);
+                    updateCustomer(customers[i])
                 }
                 if (clock === 100) {
-                    stock = 0;
+                    stock = 0
                 }
-                let numHoarders = 0;
+                let numHoarders = 0
                 for (let customer of customers) {
                     if (customer.stockLevel === config.adaptedPrivateStock) {
-                        numHoarders += 1;
+                        numHoarders += 1
                     }
                 }
-                console.log(`clock: ${clock}: stock ${stock} hoarders ${numHoarders}`);
+                console.log(`clock: ${clock}: stock ${stock} hoarders ${numHoarders}`)
             }
 
 
-            update(customers, stock, config.stockLevel);
+            render(customers, stock, config.stockLevel)
         }
 
-        setInterval(simulationStep, 200);
-
-        // for (let i = 0; i < 1000; i++) {
-        //     simulationStep();
-        // }
+        setInterval(simulationStep, simulationInterval)
     </script>
 
 

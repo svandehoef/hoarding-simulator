@@ -7,12 +7,13 @@
 </head>
 <body>
     <div>
-        <button onclick="addHoarders(this)">Add Hoarders</button>
+        <button id="addHoarderBtn" onclick="addHoarders(this)">Add Hoarders</button>
         <button onclick="reset(this)">Restart</button>
     </div>
     <div>
         <svg width="1000" height="900">
             <image x="10" y="200" width="220" height="200" xlink:href="supermarket_optimized.svg" />
+            <image id="truck" x="-100" y="230" width="100" height="200" xlink:href="icon_truck.svg" />
             <rect id="stock" width="50" height="300" fill="steelblue" x="250" y="60"/>
             <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="250" y="60"/>
         </svg>
@@ -26,6 +27,7 @@
         let customerOSX = 400
 
         let simulationInterval = 300
+        let truckDuration = 1.5*simulationInterval
 
         let svg = d3.select("svg")
         svg.selectAll('#stockframe')
@@ -89,6 +91,20 @@
             circlesRefStock
             .attr("r", d => zoomFactor*Math.sqrt(d.stockLevel))
             .attr('stroke', d => d.understocked ? 'red' : 'black')
+        }
+
+        function animateTruck() {
+            svg.selectAll("#truck")
+            .transition()
+            .attr('x', 100)
+            .duration(truckDuration)
+            .on("end",function() {
+                svg.selectAll("#truck")
+                .transition()
+                .attr('x', -100)
+                .duration(truckDuration)
+            })
+
 
         }
 
@@ -117,9 +133,10 @@
         let customers
 
         function reset() {
+            document.getElementById('addHoarderBtn').removeAttribute('disabled')
             stock = config.stockLevel
             clock = 0
-            timeSinceLastDelivery = 0
+            timeSinceLastDelivery = 15
             customers = []
             for (let i = 0; i < config.customers; i++) {
                 customers.push({
@@ -179,8 +196,12 @@
 
             if (timeSinceLastDelivery === 24) {
                 console.log('delivery')
-                stock = config.stockLevel
-                timeSinceLastDelivery = 0
+                animateTruck()
+                setTimeout(() => {
+                    stock = config.stockLevel
+                    timeSinceLastDelivery = 0
+                    render(customers, stock, config.stockLevel)
+                },truckDuration)
             } else {
                 shuffle(updateOrder)
                 for (let i of updateOrder) {

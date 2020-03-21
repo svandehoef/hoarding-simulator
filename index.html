@@ -8,11 +8,13 @@
 <body>
     <div>
         <button onclick="addHoarders(this)">Add Hoarders</button>
+        <button onclick="reset(this)">Restart</button>
     </div>
     <div>
-        <svg width="900" height="900">
-            <rect id="stock" width="50" height="300" fill="steelblue" x="60" y="60"/>
-            <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="60" y="60"/>
+        <svg width="1000" height="900">
+            <image x="10" y="200" width="220" height="200" xlink:href="supermarket_optimized.svg" />
+            <rect id="stock" width="50" height="300" fill="steelblue" x="250" y="60"/>
+            <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="250" y="60"/>
         </svg>
     </div>
 
@@ -21,7 +23,7 @@
         let zoomFactor = 4
         let maxMarketStockHeight = 300
         let circleDistance = 60
-        let customerOSX = 200
+        let customerOSX = 400
 
         let simulationInterval = 300
 
@@ -43,12 +45,10 @@
             .enter()
             .append('circle')
             .attr('class', 'buyTransition')
-            .attr('cy', 30 + maxMarketStockHeight/2)
-            .attr('cx', 85)
             .attr('fill', 'steelblue')
             svg.selectAll('.buyTransition')
-            .attr('cy', 30 + maxMarketStockHeight/2)
-            .attr('cx', 55)
+            .attr('cy', 200 + 200*0.7) // center on supermarket logo
+            .attr('cx', 10 + 220/2)
             .attr("r", customer => zoomFactor*Math.sqrt(customer.lastBuy))
             .transition()
             .attr("cy", customer => 60 + Math.floor(customer.id/10) * circleDistance)
@@ -92,9 +92,6 @@
 
         }
 
-    </script>
-
-    <script>
         // configuration
         let config = {
             customers: 100,
@@ -109,28 +106,32 @@
         config.stockLevel = config.stockSizeDays * config.customers * config.deliveryInterval / config.consumptionInterval
         console.log(`stocklevel ${config.stockLevel}`)
 
-
-        let clock = 0
-
         let updateOrder = []
         for (let i = 0; i < config.customers; i++) {
             updateOrder.push(i);
         }
 
-        let stock = config.stockLevel
-        let timeSinceLastDelivery = 0
-        let customers = []
-        for (let i = 0; i < config.customers; i++) {
-            customers.push({
-                id: i,
-                stock: config.defaultPrivateStock + Math.floor(Math.random() * 10),
-                stockLevel: config.defaultPrivateStock,
-                timeSinceLastConsumption: Math.floor(Math.random() * 24),
-                lastBuy: 0,
-                understocked: false
-            })
+        let clock
+        let stock
+        let timeSinceLastDelivery
+        let customers
+
+        function reset() {
+            stock = config.stockLevel
+            clock = 0
+            timeSinceLastDelivery = 0
+            customers = []
+            for (let i = 0; i < config.customers; i++) {
+                customers.push({
+                    id: i,
+                    stock: config.defaultPrivateStock + Math.floor(Math.random() * 10),
+                    stockLevel: config.defaultPrivateStock,
+                    timeSinceLastConsumption: Math.floor(Math.random() * 24),
+                    lastBuy: 0,
+                    understocked: false
+                })
+            }
         }
-        renderCustomers(customers)
 
         function shuffle(array) {
             let currentIndex = array.length, temporaryValue, randomIndex
@@ -207,6 +208,8 @@
             button.setAttribute('disabled', 'true')
         }
 
+        reset()
+        renderCustomers(customers)
         setInterval(simulationStep, simulationInterval)
     </script>
 

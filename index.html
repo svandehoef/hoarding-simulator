@@ -6,13 +6,14 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
 </head>
 <body>
-    <svg width="900" height="900">
-        <rect id="stock" width="50" height="300" fill="steelblue" x="60" y="60"/>
-        <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="60" y="60"/>
-    </svg>
     <div>
-        <label>Stock:</label>
-        <input type="range" min="0" max="40" value="10" class="slider" id="myRange">
+        <button onclick="addHoarders(this)">Add Hoarders</button>
+    </div>
+    <div>
+        <svg width="900" height="900">
+            <rect id="stock" width="50" height="300" fill="steelblue" x="60" y="60"/>
+            <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="60" y="60"/>
+        </svg>
     </div>
 
     <script>
@@ -27,13 +28,6 @@
         let svg = d3.select("svg")
         svg.selectAll('#stockframe')
         .attr('height', maxMarketStockHeight)
-
-        let slider = document.getElementById("myRange")
-
-        // Update the current slider value (each time you drag the slider handle)
-        slider.oninput = function() {
-            console.log(this.value)
-        }
 
         function render(customers, marketStock, marketStockLevel) {
 
@@ -181,6 +175,7 @@
         function simulationStep() {
             clock += 1
             timeSinceLastDelivery += 1
+
             if (timeSinceLastDelivery === 24) {
                 console.log('delivery')
                 stock = config.stockLevel
@@ -190,9 +185,7 @@
                 for (let i of updateOrder) {
                     updateCustomer(customers[i])
                 }
-                if (clock === 100) {
-                    stock = 0
-                }
+
                 let numHoarders = 0
                 for (let customer of customers) {
                     if (customer.stockLevel === config.adaptedPrivateStock) {
@@ -204,6 +197,14 @@
 
 
             render(customers, stock, config.stockLevel)
+        }
+
+        function addHoarders(button) {
+            shuffle(updateOrder)
+            for (let i of updateOrder.slice(0, 10)) {
+                customers[i].stockLevel = config.adaptedPrivateStock
+            }
+            button.setAttribute('disabled', 'true')
         }
 
         setInterval(simulationStep, simulationInterval)

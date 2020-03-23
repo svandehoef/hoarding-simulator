@@ -5,8 +5,55 @@
     <title>Hoarding Simulator</title>
     <script src="https://d3js.org/d3.v5.min.js"></script>
 </head>
-<body>
-    <div>
+<body style="padding-left: 20px">
+    <h1>Hoarding Simulator</h1>
+    <div style="max-width: 800px">
+        <p>
+            One of the annoying side-effects of the Corona crisis are empty shelves for some products. Apparently
+            there are no problems with the supply chains of supermarkets to speak of. The common explanation
+            for the empty shelves are some people buying excessive amounts. I actually think that the people filling
+            their garage with toilet paper and canned soup are only part of the explanation. Could it be that they are
+            just the triggers and that the bulk of the increased demand comes from people that increase their personal
+            stock of some items just a little because they lack confidence that the products they need are at their disposal
+            when they would normally get them from the store?
+        </p>
+        <p>
+            So I thought writing a simulation and visualizing the outcome could be a fun project to learn some D3.js.
+            What you see is the result of that train of thought.
+        </p>
+        <p>
+            The bar at the left shows the stock level of some product (say toilet paper). Every day a delivery comes
+            and refills the stock completely. The stock is sized that it lasts for two days.
+            On the right you see the personal stocks of 100 customers. The area in the circle is proportional to
+            the stock of that customer. Every day each customer consumes one item of our simulated product.
+            The black circles show the stock level at which a customer feels the need to restock. We'll call this
+            the reference stock level of a customer.
+            They go immediately
+            and buy enough for the next eight days (if available). Initially customers go shopping when their stock falls
+            below 5.
+        </p>
+        <p>
+            If a customer goes to the stores and there is nothing to buy, he/she increases the his/her reference stock
+            level from 5 to 30. You can see that under normal circumstances that hardly every happens.
+        </p>
+        <p>
+            When you click the "Add Hoarders" button, 10 randomly chosen customers increase their reference stock level
+            to 30. This would correspond to them reading some unsettling news that leads them to believe that they
+            might not get the simulated product for a month. What typically happens is a chain reaction where
+            eventually all 100 customers become hoarders.
+        </p>
+        <p>
+            So only that shelves are empty doesn't mean that there is an actually shortage of goods. It might just
+            that your local supermarket can't refill their shelves quickly enough because everybody fills their shelves
+            at home a little more.
+        </p>
+        <p>
+            <b>Disclaimer: </b> This simulation of course much more simple than reality and I haven't based it on
+            any research or data from actual grocery stores. It's purpose is simply to illustrate a principle
+            and for me to have some fun coding.
+        </p>
+    </div>
+    <div style="margin-top: 50px">
         <button id="addHoarderBtn" onclick="addHoarders(this)">Add Hoarders</button>
         <button onclick="reset(this)">Restart</button>
     </div>
@@ -216,7 +263,6 @@
                 }
                 console.log(`clock: ${clock}: stock ${stock} hoarders ${numHoarders}`)
             }
-
 
             render(customers, stock, config.stockLevel)
         }

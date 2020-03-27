@@ -57,12 +57,19 @@
         <button id="addHoarderBtn" onclick="addHoarders(this)">Add Hoarders</button>
         <button onclick="reset(this)">Restart</button>
     </div>
-    <div>
-        <svg width="1000" height="900">
+    <div style="margin-top: 20px; margin-bottom: 30px">
+        <svg width="1000" height="650">
+            <rect width="1000" height="650" rx="15" fill="rgb(230, 230, 230)"/>
             <image x="10" y="200" width="220" height="200" xlink:href="supermarket_optimized.svg" />
             <image id="truck" x="-100" y="230" width="100" height="200" xlink:href="icon_truck.svg" />
             <rect id="stock" width="50" height="300" fill="steelblue" x="250" y="60"/>
             <rect id="stockFrame" width="50" height="300" fill="none" stroke="black" x="250" y="60"/>
+            <circle cx="50" cy="505" r="15" fill="steelblue"></circle>
+            <text x="80" y="510">Stock of a customer</text>
+            <circle cx="50" cy="545" r="15" fill="none" stroke="black" stroke-width="1.5"></circle>
+            <text x="80" y="550">Reference stock of a customer</text>
+            <text x="35" y="590">The quantity is proportional to the area.</text>
+            <rect x="25" y="480" width="310" height="130" fill="none" stroke="black" stroke-width="1.5" rx="5"/>
         </svg>
     </div>
 
@@ -280,6 +287,25 @@
         setInterval(simulationStep, simulationInterval)
     </script>
 
+    <style>
+        p {
+            font-family: sans-serif;
+            font-size: 14px;
+            line-height: 22.4px;
+        }
+
+        text {
+            font-family: sans-serif;
+            font-size: 14px;
+            line-height: 22.4px;
+        }
+
+        h1 {
+            font-family: sans-serif;
+            font-size: 28.8px;
+            font-weight: 400;
+        }
+    </style>
 
 </body>
 </html>

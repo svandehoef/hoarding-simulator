@@ -54,8 +54,16 @@
         </p>
     </div>
     <div style="margin-top: 50px">
-        <button id="addHoarderBtn" onclick="addHoarders(this)">Add Hoarders</button>
-        <button onclick="reset(this)">Restart</button>
+        <div class="formRow">
+            <button id="addHoarderBtn" onclick="addHoarders(this)">Add Hoarders</button>
+            <button onclick="reset(this)">Restart</button>
+        </div>
+        <div class="formRow, slider">
+            <span class="slider-label">Simulation Speed:</span>
+            <input type="range" min="1" max="50" value="10" class="slider-input" id="sim_speed" oninput="setSimSpeed(this.value)">
+            <span id="simSpeedValue" class="slider-value"> 1 x</span>
+        </div>
+
     </div>
     <div style="margin-top: 20px; margin-bottom: 30px">
         <svg width="1000" height="650">
@@ -82,10 +90,20 @@
 
         let simulationInterval = 300
         let truckDuration = 1.5*simulationInterval
+        let simulationSpeed = 10
+        let simpSpeedF
+
+        setSimSpeed(simulationSpeed)
 
         let svg = d3.select("svg")
         svg.selectAll('#stockframe')
         .attr('height', maxMarketStockHeight)
+
+        function setSimSpeed(value) {
+            let simulationSpeed = value/10;
+            simpSpeedF = 1/simulationSpeed;
+            document.getElementById("simSpeedValue").innerHTML = simulationSpeed.toString().substr(0,3) + ' x';
+        }
 
         function render(customers, marketStock, marketStockLevel) {
 
@@ -109,7 +127,7 @@
             .transition()
             .attr("cy", customer => 60 + Math.floor(customer.id/10) * circleDistance)
             .attr("cx", customer => (customer.id%10) * circleDistance + customerOSX)
-            .duration(simulationInterval*.8)
+            .duration(simulationInterval*.8*simpSpeedF)
             .on("end",function() {
                 numEnded++;
                 if (numEnded === customers.length) {
@@ -151,12 +169,12 @@
             svg.selectAll("#truck")
             .transition()
             .attr('x', 100)
-            .duration(truckDuration)
+            .duration(truckDuration*simpSpeedF)
             .on("end",function() {
                 svg.selectAll("#truck")
                 .transition()
                 .attr('x', -100)
-                .duration(truckDuration)
+                .duration(truckDuration*simpSpeedF)
             })
 
 
@@ -245,6 +263,8 @@
         }
 
         function simulationStep() {
+            setTimeout(simulationStep, simulationInterval*simpSpeedF)
+
             clock += 1
             timeSinceLastDelivery += 1
 
@@ -255,7 +275,7 @@
                     stock = config.stockLevel
                     timeSinceLastDelivery = 0
                     render(customers, stock, config.stockLevel)
-                },truckDuration)
+                },truckDuration*simpSpeedF)
             } else {
                 shuffle(updateOrder)
                 for (let i of updateOrder) {
@@ -284,7 +304,7 @@
 
         reset()
         renderCustomers(customers)
-        setInterval(simulationStep, simulationInterval)
+        simulationStep()
     </script>
 
     <style>
@@ -305,6 +325,23 @@
             font-size: 28.8px;
             font-weight: 400;
         }
+
+        .formRow {
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .slider {
+            display:flex;
+            flex-direction:row;
+            align-items:center;
+        }
+
+        .slider-input {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
     </style>
 
 </body>
